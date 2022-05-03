@@ -98,6 +98,14 @@ func clienttest() {
 //             "enabled":true
 //           }'
 // 
+// since testnet can be quiet, can also trigger an account and payment operations emission onto testnet, by setting third
+// parameter to true:
+// go run test.go <filteredHorizonUrl> <unfilteredHorizonUrl> true
+//
+// both horizons should be using Testnet network. Then tail tx_generate.log in the current runtime directory to see the activity of new account ids and payment tx's generated
+// from them. It will generate payment tx's for FilterDollar asset. You can add those accounts and/or FilterDollar asset to filter rules
+// to then see differences between filtered and non-filtered horizons
+// 
 func main() {
 
 	// https://localhost:8000/
@@ -133,16 +141,8 @@ func main() {
 	filteredLogger := log.New(filteredHorizonLog, "Tx Received:\t", log.Ldate|log.Ltime|log.Lshortfile)
 	filteredLogger.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
 
-	client := horizonclient.DefaultTestNetClient
-
-	networkDetails, err := client.Root()
-	if err != nil {
-		panic(err)
-	}
-	txLogger.Printf("network passphrase: %s", networkDetails.NetworkPassphrase)
-
 	if generatePayments {
-		streamPayments(txLogger, client, networkDetails)
+		streamPayments(txLogger)
 	}
 
 	// stream out the log of tx activity on filtered horizon instance for chosen account
@@ -151,7 +151,15 @@ func main() {
 	streamTx(unfilteredHorizon, getPrintHandler(unfilteredLogger))
 }
 
-func streamPayments(txLogger *log.Logger, client *horizonclient.Client, networkDetails horizon.Root) []*keypair.FromAddress {
+func streamPayments(txLogger *log.Logger) []*keypair.FromAddress {
+
+    client := horizonclient.DefaultTestNetClient
+
+	networkDetails, err := client.Root()
+	if err != nil {
+		panic(err)
+	}
+	txLogger.Printf("network passphrase: %s", networkDetails.NetworkPassphrase)
 
 	count := 2
 	accs := make([]*keypair.Full, count)
