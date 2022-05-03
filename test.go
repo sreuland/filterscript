@@ -68,7 +68,36 @@ func clienttest() {
 
 }
 
+// monitor ingestion filtering:
+//
 // go run test.go <filteredHorizonUrl> <unfilteredHorizonUrl> <generatePayments true/false>
+// 
+// setup tail on unfiltered_horizon.log and filtered_horizon.log files that are created in current run directory
+// to see the difference in tx activity being saved into history.
+//
+// then update the filters on the one horizon instance to see tx activity change, will need access to the admin port
+// for this horizon instance, this example uses 4200 as admin port:
+//
+// account filter update
+// curl --location --request PUT 'http://localhost:4200/ingestion/filters/account' \
+//      --header 'Content-Type: app' \
+//      --data-raw '{ 
+//             "whitelist":[
+//               "GCSD5KM3YITXGBETUXZBQETKEP4YCVBLKVHNHI5A24TI2EEOFTA7K3KK"
+//             ],
+//             "enabled":true
+//           }'
+//
+// asset filter update
+// curl --location --request PUT 'http://localhost:4200/ingestion/filters/asset' \
+//      --header 'Content-Type: app' \
+//      --data-raw '{ 
+//             "whitelist":[
+//               "USDC:GCSD5KM3YITXGBETUXZBQETKEP4YCVBLKVHNHI5A24TI2EEOFTA7K3KK"
+//             ],
+//             "enabled":true
+//           }'
+// 
 func main() {
 
 	// https://localhost:8000/
