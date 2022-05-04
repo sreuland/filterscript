@@ -99,7 +99,7 @@ func clienttest() {
 //           }'
 // 
 // since testnet can be quiet, can also trigger an account and payment operations emission onto testnet, by setting third
-// parameter to true:
+// parameter to true, it will submit tx's to the filteredhorizon url:
 // go run test.go <filteredHorizonUrl> <unfilteredHorizonUrl> true
 //
 // both horizons should be using Testnet network. Then tail tx_generate.log in the current runtime directory to see the activity of new account ids and payment tx's generated
@@ -112,7 +112,7 @@ func main() {
 	filteredHorizon := os.Args[1]
 	// https://horizon-testnet.stellar.org/
 	unfilteredHorizon := os.Args[2]
-	generatePayments, err := strconv.ParseBool(os.Args[2])
+	generatePayments, err := strconv.ParseBool(os.Args[3])
 	if err != nil {
 		generatePayments = false
 	}
@@ -142,7 +142,7 @@ func main() {
 	filteredLogger.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
 
 	if generatePayments {
-		streamPayments(txLogger)
+		streamPayments(filteredHorizon, txLogger)
 	}
 
 	// stream out the log of tx activity on filtered horizon instance for chosen account
@@ -151,9 +151,12 @@ func main() {
 	streamTx(unfilteredHorizon, getPrintHandler(unfilteredLogger))
 }
 
-func streamPayments(txLogger *log.Logger) []*keypair.FromAddress {
+func streamPayments(horizonUrl string, txLogger *log.Logger) []*keypair.FromAddress {
 
-    client := horizonclient.DefaultTestNetClient
+    client := &horizonclient.Client{
+	    HorizonURL:     horizonUrl,
+	    HTTP:           http.DefaultClient,
+    }
 
 	networkDetails, err := client.Root()
 	if err != nil {
