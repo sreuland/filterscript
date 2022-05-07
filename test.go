@@ -299,24 +299,23 @@ func getPrintHandler(logger *log.Logger) func(horizon.Transaction) {
 		}
 
         var operations []xdr.Operation
+        var txType string
         var sourceAccount string
 		tx1, v1Exists := result.GetV1()
 		if v1Exists {
 			operations = tx1.Tx.Operations
-			sourceAccount = tx1.Tx.SourceAccount.Address()[len(tx1.Tx.SourceAccount.Address())-10:]
+			txType = "V1"
+			sourceAccount = tx1.Tx.SourceAccount.Address()
 		}
 		tx0, v0Exists := result.GetV0()
 		if v0Exists {
 			operations = tx0.Tx.Operations
-			sourceAccount = "v0 account"
+			txType = "V0"
+			sourceAccount = fmt.Sprintf("%s",tx0.Tx.SourceAccountEd25519)
 		}
 
 		for _, operation := range operations {
-			switch operation.Body.Type {
-			case xdr.OperationTypePayment:
-				op := operation.Body.PaymentOp
-				logger.Printf("Transaction %v for payee %v, payor %v, asset %v, amount %v \n\n", tr.Hash[len(tr.Hash)-10:], op.Destination.Address()[len(op.Destination.Address())-10:], sourceAccount, op.Asset.GetCode(), op.Amount)
-			}
+			logger.Printf("Transaction %v:%v, Operation %v, Source %v\n\n", tr.Hash[len(tr.Hash)-10:], txType, operation.Body.Type.String(), sourceAccount)
 		}
 	}
 }
