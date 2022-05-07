@@ -298,17 +298,24 @@ func getPrintHandler(logger *log.Logger) func(horizon.Transaction) {
 			return
 		}
 
-		tx, v1Exists := result.GetV1()
-		if !v1Exists {
-			logger.Printf("Can't log transaction, it's not V1, %v", tr.EnvelopeXdr)
-			return
+        var operations []xdr.Operation
+        var sourceAccount string
+		tx1, v1Exists := result.GetV1()
+		if v1Exists {
+			operations = tx1.Tx.Operations
+			sourceAccount = tx1.Tx.SourceAccount.Address()[len(tx1.Tx.SourceAccount.Address())-10:]
+		}
+		tx0, v0Exists := result.GetV0()
+		if v0Exists {
+			operations = tx0.Tx.Operations
+			sourceAccount = "v0 account"
 		}
 
-		for _, operation := range tx.Tx.Operations {
+		for _, operation := range operations {
 			switch operation.Body.Type {
 			case xdr.OperationTypePayment:
 				op := operation.Body.PaymentOp
-				logger.Printf("Transaction %v for payee %v, payor %v, asset %v, amount %v \n\n", tr.Hash[len(tr.Hash)-10:], op.Destination.Address()[len(op.Destination.Address())-10:], tx.Tx.SourceAccount.Address()[len(tx.Tx.SourceAccount.Address())-10:], op.Asset.GetCode(), op.Amount)
+				logger.Printf("Transaction %v for payee %v, payor %v, asset %v, amount %v \n\n", tr.Hash[len(tr.Hash)-10:], op.Destination.Address()[len(op.Destination.Address())-10:], sourceAccount, op.Asset.GetCode(), op.Amount)
 			}
 		}
 	}
