@@ -315,7 +315,7 @@ func getPrintHandler(logger *log.Logger) func(horizon.Transaction) {
 		}
 
 		for _, operation := range operations {
-			logger.Printf("Transaction %v:%v, Operation %v, Source %v\n\n", tr.Hash[len(tr.Hash)-10:], txType, operation.Body.Type.String(), sourceAccount)
+			logger.Printf("Transaction %v:%v, Operation %v, Source %v\n\n", tr.Hash, txType, operation.Body.Type.String(), sourceAccount)
 		}
 	}
 }
